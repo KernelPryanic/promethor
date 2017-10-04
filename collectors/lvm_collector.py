@@ -50,7 +50,7 @@ class LVM(object):
                             re.sub("-", "_", lv.getName()),
                             "LVM data percentages")
                     self.metrics[lv.getName()].set(
-                        lv.getProperty("data_percent")[0])
+                        lv.getProperty("data_percent")[0] / 1000000.0)
         except:
             log.error("Something wrong with lvm data collection\n{}".
                 format(traceback.format_exc()))
