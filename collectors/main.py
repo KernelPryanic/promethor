@@ -10,6 +10,11 @@ def main():
     try:
         parser = argparse.ArgumentParser()
 
+        parser.add_argument("-c", "--collectors", dest="collectors",
+            nargs='+', default=[], choices=["lvm"],
+            help="List of desired collectors to include")
+        parser.add_argument("-p", "--port", dest="port",
+            default=8000, help="Port of http info server")
         parser.add_argument("-t", "--timeout", dest="timeout",
             default=10, help="Timeout of cleaning. "
                 "Live it empty in case of using cron job.")
@@ -18,11 +23,6 @@ def main():
             choices=["CRITICAL", "ERROR", "WARNING",
                 "INFO", "DEBUG", "NOTSET"],
             help="Logging level")
-        parser.add_argument("-c", "--collectors", dest="collectors",
-            nargs='+', default=[], choices=["lvm"],
-            help="List of desired collectors to include")
-        parser.add_argument("-p", "--port", dest="port",
-            default=8000, help="Port of http info server")
         parser.add_argument("-l", "--log", dest="log",
             help="Redirect logging to file")
         args = parser.parse_args()
@@ -38,10 +38,10 @@ def main():
             log.addHandler(logger.StreamHandler())
             log.setLevel(getattr(logging, args.loglevel))
 
-        start_http_server(args.port)
+        start_http_server(int(args.port))
 
         if "lvm" in args.collectors:
-            lvm_collector = LVM(args.timeout, args.loglevel, args.log)
+            lvm_collector = LVM(int(args.timeout), args.loglevel, args.log)
             lvm_collector.collect()
 
     except KeyboardInterrupt:
