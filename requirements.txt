@@ -1,0 +1,3 @@
+#python-lvm
+pbr>=1.9
+setuptools>=17.1
