@@ -34,22 +34,18 @@ class LVM(object):
                 log.addHandler(logger.StreamHandler())
                 log.setLevel(getattr(logging, loglevel))
 
-        self.metrics = dict()
         self.timeout = timeout
+        self.metric = Gauge("lvm", "LVM data in percentages", ["lv", "vg"])
 
     @loop
     def collect(self):
         try:
             vg_names = lvm.listVgNames()
-            for v in vg_names:
-                vg = lvm.vgOpen(v, 'r')
+            for vg_name in vg_names:
+                vg = lvm.vgOpen(vg_name, 'r')
                 lvs = vg.listLVs()
                 for lv in lvs:
-                    if lv.getName() not in self.metrics:
-                        self.metrics[lv.getName()] = Gauge(
-                            re.sub("-", "_", lv.getName()),
-                            "LVM data percentages")
-                    self.metrics[lv.getName()].set(
+                    self.metric.labels(lv.getName(), vg_name).set(
                         lv.getProperty("data_percent")[0] / 1000000.0)
         except:
             log.error("Something wrong with lvm data collection\n{}".
