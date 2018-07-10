@@ -1,0 +1,8 @@
+connection:
+  host: localhost
+  user: root
+  password: root
+  db: db
+  charset: utf8mb4
+metrics:
+  pending_threshold: 10
