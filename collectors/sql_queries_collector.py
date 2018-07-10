@@ -38,8 +38,7 @@ class SQL(object):
             user=config["connection"]["user"],
             password=config["connection"]["password"],
             db=config["connection"]["db"],
-            charset=config["connection"]["charset"],
-            cursorclass=pymysql.cursors.DictCursor
+            charset=config["connection"]["charset"]
         )
         self.timeout = timeout
         self.metric = Gauge("sql_pending", "SQL pending queries", ["host"])
@@ -49,13 +48,13 @@ class SQL(object):
         try:
             with self.connection.cursor() as cursor:
                 sql = '''SELECT COUNT(`id`)
-                    FROM `INFORMATION_SCHEMA.PROCESSLIST`
+                    FROM `PROCESSLIST`
                     WHERE `INFO` is not NULL
                     AND `time` >= {}
                 '''.format(self.config["metrics"]["pending_threshold"])
                 cursor.execute(sql)
                 result = cursor.fetchone()
-                self.metric.labels(self.connection.host).set(result)
+                self.metric.labels(self.connection.host).set(result[0])
         except:
             log.error("Something wrong with SQL data collection\n{}".
                 format(traceback.format_exc()))
