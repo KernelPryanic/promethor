@@ -1,23 +1,10 @@
 import logger
 import lvm
 from prometheus_client import Gauge
-import re
 import traceback
-import time
 
 import logging
-
-
-def loop(func):
-    def wrapper(self, *args, **kwargs):
-        if self.timeout is not None:
-            while True:
-                func(self, *args, **kwargs)
-                time.sleep(self.timeout)
-        else:
-            func(self, *args, **kwargs)
-        return
-    return wrapper
+import utils
 
 
 class LVM(object):
@@ -37,7 +24,7 @@ class LVM(object):
         self.timeout = timeout
         self.metric = Gauge("lvm", "LVM data in percentages", ["lv", "vg"])
 
-    @loop
+    @utils.loop
     def collect(self):
         try:
             vg_names = lvm.listVgNames()
