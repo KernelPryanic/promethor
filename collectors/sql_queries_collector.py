@@ -1,11 +1,9 @@
 import logger
 import pymysql
 from prometheus_client import Gauge
-import re
 import traceback
-import time
 import yaml
- 
+
 import logging
 import utils
 
@@ -14,7 +12,7 @@ class SQL(object):
     def __init__(self, sql_config_path, timeout=None,
                  loglevel=None, filelog=None):
         global log
- 
+
         if "log" not in globals():
             if filelog is not None:
                 log = logging.getLogger(__name__)
@@ -24,14 +22,13 @@ class SQL(object):
                 log = logging.getLogger(__name__)
                 log.addHandler(logger.StreamHandler())
                 log.setLevel(getattr(logging, loglevel))
- 
+
         with open(sql_config_path) as sql_config:
             try:
                 config = yaml.load(sql_config)
             except:
-                log.error("Can't parse SQL config!")
                 raise Exception("Can't parse SQL config!")
- 
+
         self.config = config
         self.connection = pymysql.connect(
             host=config["connection"]["host"],
@@ -41,8 +38,8 @@ class SQL(object):
             charset=config["connection"]["charset"]
         )
         self.timeout = timeout
-        self.metric = Gauge("sql_pending", "SQL pending queries", ["host"])
- 
+        self.metric = Gauge("sql_pending", "SQL pending queries", ["instance"])
+
     @utils.loop
     def collect(self):
         try:
@@ -58,4 +55,3 @@ class SQL(object):
         except:
             log.error("Something wrong with SQL data collection\n{}".
                 format(traceback.format_exc()))
-

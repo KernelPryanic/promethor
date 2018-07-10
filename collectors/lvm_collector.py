@@ -1,9 +1,7 @@
 import logger
 import lvm
 from prometheus_client import Gauge
-import re
 import traceback
-import time
 
 import logging
 import utils
