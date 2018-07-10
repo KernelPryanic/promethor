@@ -38,7 +38,7 @@ class SQL(object):
             charset=config["connection"]["charset"]
         )
         self.timeout = timeout
-        self.metric = Gauge("sql_pending", "SQL pending queries", ["instance"])
+        self.metric = Gauge("sql_pending", "SQL pending queries", ["host"])
 
     @utils.loop
     def collect(self):
