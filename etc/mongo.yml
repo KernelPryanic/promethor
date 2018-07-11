@@ -1,0 +1,6 @@
+connection:
+  addr: localhost
+  user: root
+  password: root
+  auth_db: admin
+  params: replicaSet=rs1&readPreference=primaryPreferred

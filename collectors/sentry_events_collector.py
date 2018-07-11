@@ -28,7 +28,7 @@ class Metric(object):
         self._project = project
         self._horizon = timedelta(seconds=horizon)
         self._name = name
-        self._gauge = Gauge("sentry",
+        self._gauge = Gauge("sentry_events",
             "Number if errors for {}/{} from Sentry during last {} sec.".
             format(organization, project, horizon), ["project", "name"])
 

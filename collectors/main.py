@@ -7,6 +7,7 @@ from prometheus_client import start_http_server
 
 import logger
 from lvm_collector import LVM
+from mongo_collector import Mongo
 from sentry_events_collector import SentryEvents
 from sql_collector import SQL
 
@@ -16,7 +17,7 @@ def main():
         parser = argparse.ArgumentParser()
 
         parser.add_argument("-c", "--collectors", dest="collectors",
-            nargs='+', default=[], choices=["lvm", "sentry", "sql"],
+            nargs='+', default=[], choices=["lvm", "sentry", "sql", "mongo"],
             help="List of desired collectors to include")
         parser.add_argument("-p", "--port", dest="port",
             default=8000, help="Port of http info server")
@@ -34,6 +35,8 @@ def main():
             default="/etc/promethor/sentry.yml", help="Path to Sentry config")
         parser.add_argument("--sql", dest="sql",
             default="/etc/promethor/sql.yml", help="Path to SQL config")
+        parser.add_argument("--mongo", dest="mongo",
+            default="/etc/promethor/mongo.yml", help="Path to Mongo config")
         args = parser.parse_args()
 
         if "sentry" in args.collectors and args.sentry is None:
@@ -41,6 +44,9 @@ def main():
 
         if "sql" in args.collectors and args.sql is None:
             parser.error("SQL collector requires --sql")
+
+        if "mongo" in args.collectors and args.mongo is None:
+            parser.error("Mongo collector requires --mongo")
 
         global log
 
@@ -74,6 +80,13 @@ def main():
             sql_collector = SQL(args.sql, int(args.timeout), args.loglevel,
                 args.log)
             t = threading.Thread(target=sql_collector.collect)
+            t.daemon = True
+            t.start()
+            threads.append(t)
+        if "mongo" in args.collectors:
+            mongo_collector = Mongo(args.mongo, int(args.timeout),
+                args.loglevel, args.log)
+            t = threading.Thread(target=mongo_collector.collect)
             t.daemon = True
             t.start()
             threads.append(t)
