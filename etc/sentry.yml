@@ -4,4 +4,4 @@ metrics:
   - name: foo_sentry_errors
     organization: bar
     project: foo
-    horizon_sec: 60
+    horizon: 60 # Threshold for latest errors in seconds
