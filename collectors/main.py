@@ -1,11 +1,14 @@
 import argparse
-import logger
+import threading
+import time
+import logging
+
 from prometheus_client import start_http_server
 
-import logging
+import logger
 from lvm_collector import LVM
 from sentry_events_collector import SentryEvents
-from sql_queries_collector import SQL
+from sql_collector import SQL
 
 
 def main():
@@ -52,21 +55,36 @@ def main():
 
         start_http_server(int(args.port))
 
+        threads = []
+
         if "lvm" in args.collectors:
             lvm_collector = LVM(int(args.timeout), args.loglevel, args.log)
-            lvm_collector.collect()
+            t = threading.Thread(target=lvm_collector.collect)
+            t.daemon = True
+            t.start()
+            threads.append(t)
         if "sentry" in args.collectors:
             sentry_collector = SentryEvents(args.sentry, int(args.timeout),
                 args.loglevel, args.log)
-            sentry_collector.collect()
+            t = threading.Thread(target=sentry_collector.collect)
+            t.daemon = True
+            t.start()
+            threads.append(t)
         if "sql" in args.collectors:
             sql_collector = SQL(args.sql, int(args.timeout), args.loglevel,
                 args.log)
-            sql_collector.collect()
+            t = threading.Thread(target=sql_collector.collect)
+            t.daemon = True
+            t.start()
+            threads.append(t)
+
+        while True:
+            time.sleep(1)
 
     except KeyboardInterrupt:
         print('\nThe process was interrupted by the user')
         raise SystemExit
+
 
 if __name__ == "__main__":
     main()

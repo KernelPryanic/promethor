@@ -1,7 +1,6 @@
 import logging
 import traceback
 
-from collections import namedtuple
 from datetime import datetime, timedelta
 
 import dateutil.parser
@@ -28,14 +27,17 @@ class Metric(object):
         self._organization = organization
         self._project = project
         self._horizon = timedelta(seconds=horizon)
-        self._gauge = Gauge(name, "Number if errors for {}/{} from Sentry during last {} sec.".format(
-            organization, project, horizon))
+        self._gauge = Gauge(name,
+            "Number if errors for {}/{} from Sentry during last {} sec.".
+            format(organization, project, horizon))
 
     @staticmethod
     def _count_events(events, younger_than):
         count = 0
         for event in events:
-            if dateutil.parser.parse(event["dateReceived"]) > younger_than:
+            date_received = dateutil.parser.parse(
+                event["dateReceived"]).replace(tzinfo=None)
+            if date_received > younger_than.replace(tzinfo=None):
                 count += 1
             else:
                 break
@@ -51,24 +53,27 @@ class Metric(object):
             return None
 
     def update(self, api_token, base_api_url):
-        cut_off_time = datetime.now() - self._horizon
+        cut_off_time = datetime.utcnow() - self._horizon
         total_events_count = 0
-        request_url =  base_api_url + "projects/{}/{}/events/".format(self._organization, self._project)
+        request_url = base_api_url + "projects/{}/{}/events/".format(
+            self._organization, self._project)
         auth = TokenAuth(api_token)
         while request_url:
             response = requests.get(request_url, auth=auth)
             if response.status_code != 200:
-                log.error("Request to Sentry API ({}) failed: {}".format(request_url, response.text))
+                log.error("Request to Sentry API ({}) failed: {}".format(
+                    request_url, response.text))
                 return
             events = response.json()
-            relevant_events_count = self._count_events(events, younger_than=cut_off_time)
+            relevant_events_count = self._count_events(events,
+                younger_than=cut_off_time)
             total_events_count += relevant_events_count
-            if total_events_count < len(event):
+            if total_events_count < len(events):
                 break
 
             request_url = self._next_page_url(response.headers["Link"])
 
-        self._gauge.set(total_events)
+        self._gauge.set(total_events_count)
 
 
 class SentryEvents(object):
@@ -96,7 +101,9 @@ class SentryEvents(object):
 
         self._api_token = self.config["api_token"]
         self._base_api_url = self.config["base_api_url"]
-        self._metrics = [Metric(m["name"], m["organization"], m["project"], m["horizon"]) for m in self.config["metrics"]]
+        self._metrics = [Metric(m["name"], m["organization"],
+                                m["project"], m["horizon"])
+            for m in self.config["metrics"]]
 
     @utils.loop
     def collect(self):
