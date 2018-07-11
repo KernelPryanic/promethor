@@ -38,7 +38,7 @@ class SQL(object):
             charset=config["connection"]["charset"]
         )
         self.timeout = timeout
-        self.metric = Gauge("sql_pending", "SQL pending queries", ["host"])
+        self.sql_pending = Gauge("sql_pending", "SQL pending queries", ["host"])
 
     @utils.loop
     def collect(self):
@@ -51,7 +51,7 @@ class SQL(object):
                 '''.format(self.config["metrics"]["pending_threshold"])
                 cursor.execute(sql)
                 result = cursor.fetchone()
-                self.metric.labels(self.connection.host).set(result[0])
+                self.sql_pending.labels(self.connection.host).set(result[0])
         except:
             log.error("Something wrong with SQL data collection\n{}".
                 format(traceback.format_exc()))
