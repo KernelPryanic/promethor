@@ -1,0 +1,7 @@
+base_api_url: url
+api_token: token
+metrics:
+  - name: foo_sentry_errors
+    organization: bar
+    project: foo
+    horizon_sec: 60
