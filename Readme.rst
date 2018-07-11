@@ -33,7 +33,7 @@ arguments
 ^^^^^^^^^
 
 * ``-t, --timeout`` - Monitoring timeout
-* ``-c, --collectors`` - List of collectors. Choose from: ``lvm``
+* ``-c, --collectors`` - List of collectors. Choose from: ``lvm, sentry, sql``
 * ``-p, --port`` - Port to run on
 * ``--loglevel`` - Level of logging. Choose from: ``CRITICAL``, ``ERROR``, ``WARNING``, ``INFO``, ``DEBUG``, ``NOTSET``
 * ``-l, --log`` - Redirect logging to file
