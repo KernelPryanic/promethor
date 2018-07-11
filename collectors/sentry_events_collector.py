@@ -27,9 +27,10 @@ class Metric(object):
         self._organization = organization
         self._project = project
         self._horizon = timedelta(seconds=horizon)
-        self._gauge = Gauge(name,
+        self._name = name
+        self._gauge = Gauge("sentry",
             "Number if errors for {}/{} from Sentry during last {} sec.".
-            format(organization, project, horizon))
+            format(organization, project, horizon), ["project", "name"])
 
     @staticmethod
     def _count_events(events, younger_than):
@@ -73,7 +74,7 @@ class Metric(object):
 
             request_url = self._next_page_url(response.headers["Link"])
 
-        self._gauge.set(total_events_count)
+        self._gauge.labels(self._project, self._name).set(total_events_count)
 
 
 class SentryEvents(object):
