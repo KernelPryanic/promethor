@@ -53,6 +53,10 @@ class SQL(object):
                 cursor.execute(sql)
                 result = cursor.fetchone()
                 self.sql_pending.labels(self.connection.host).set(result[0])
+        except InterfaceError:
+            self.connection.close()
+            self.connection.connect()
+            log.warning("Reconnected due connection loss.")
         except:
             log.error("Something wrong with SQL data collection\n{}".
                 format(traceback.format_exc()))
