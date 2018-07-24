@@ -53,7 +53,7 @@ class SQL(object):
                 cursor.execute(sql)
                 result = cursor.fetchone()
                 self.sql_pending.labels(self.connection.host).set(result[0])
-        except InterfaceError:
+        except pymysql.err.InterfaceError:
             self.connection.close()
             self.connection.connect()
             log.warning("Reconnected due connection loss.")
